@@ -19,7 +19,6 @@ namespace APIClinica.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuración de Paciente
             modelBuilder.Entity<Paciente>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -30,21 +29,20 @@ namespace APIClinica.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuración de MedicoServicio (Many-to-Many)
+           
             modelBuilder.Entity<MedicoServicio>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.MedicoId, e.ServicioId }).IsUnique();
             });
 
-            // Configuración de Cita - Control de cupos (máximo 2 por hora)
             modelBuilder.Entity<Cita>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.MedicoId, e.Fecha, e.Hora, e.Estado })
                       .HasDatabaseName("UX_Citas_CupoPorHora")
                       .IsUnique()
-                      .HasFilter("[Estado] = 0"); // Solo para citas programadas
+                      .HasFilter("[Estado] = 0");
             });
 
             
