@@ -47,7 +47,7 @@ namespace APIClinica.Data
                       .HasFilter("[Estado] = 0"); // Solo para citas programadas
             });
 
-            // Seed Data (datos iniciales)
+            
             modelBuilder.Entity<Seguro>().HasData(
                 new Seguro { Id = 1, Nombre = "Seguro A", Descripcion = "Seguro básico", Activo = true },
                 new Seguro { Id = 2, Nombre = "Seguro B", Descripcion = "Seguro premium", Activo = true },
