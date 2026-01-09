@@ -81,14 +81,14 @@ async function loadPatients() {
   error.value = '';
   try {
     const result = await fetchPatients(currentPage.value, pageSize, search.value || null);
-    console.log('API Response:', result); // Debug
+    console.log('API Response:', result);
     patients.value = result.items || [];
     currentPage.value = result.currentPage || 1;
     totalPages.value = result.totalPages || 1;
     totalItems.value = result.totalItems || 0;
   } catch (err) {
     if (err.response?.status === 500) {
-      error.value = 'Error: La API no está disponible. Por favor, verifica que el servidor esté iniciado.';
+      error.value = 'Api no disponible';
     } else {
       const errorMessage = err.response?.data?.message || err.message || 'Error al cargar pacientes';
       error.value = `Error: ${errorMessage}`;
@@ -119,7 +119,7 @@ async function handleDelete(id) {
     await loadPatients();
   } catch (err) {
     if (err.response?.status === 500) {
-      alert('Error: La API no está disponible. Por favor, verifica que el servidor esté iniciado.');
+      alert('Api no disponible');
     } else {
       alert('Error al eliminar el paciente');
     }

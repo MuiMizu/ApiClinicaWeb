@@ -113,7 +113,6 @@ async function loadAppointments() {
 
 function handleSearchChange(value) {
   filters.value.search = value;
-  // La búsqueda se puede implementar si el backend lo soporta
   loadAppointments();
 }
 

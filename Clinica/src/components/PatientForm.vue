@@ -34,7 +34,7 @@
       <label>Teléfono</label>
       <input 
         v-model.trim="form.phone" 
-        placeholder="+51 999 999 999"
+        placeholder="+1 999 999 9999"
         :disabled="loading"
       />
     </div>

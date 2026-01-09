@@ -1,8 +1,6 @@
 import axios from 'axios';
 
 const http = axios.create({
-  // Usar URL relativa para aprovechar el proxy de Vite en desarrollo
-  // En producción, usar la variable de entorno VITE_API_URL
   baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 10000,
   headers: {
@@ -10,7 +8,6 @@ const http = axios.create({
   },
 });
 
-// Interceptor para manejar errores
 http.interceptors.response.use(
   (response) => response,
   (error) => {
