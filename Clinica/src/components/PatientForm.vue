@@ -68,14 +68,14 @@
 
     <div class="actions">
       <button 
-        class="btn primary" 
+      class="btn btn-outline-primary" 
         type="submit" 
         :disabled="submitting || loading"
       >
         {{ submitting ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear' }}
       </button>
       <button 
-        class="btn ghost" 
+        class="btn btn-outline-info" 
         type="button" 
         @click="resetForm" 
         :disabled="submitting || loading"
@@ -214,6 +214,10 @@ async function handleSubmit() {
 .success-text {
   color: #059669;
   font-size: 14px;
+}
+
+.field select, option{
+  color: #000000;
 }
 </style>
 

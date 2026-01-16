@@ -107,14 +107,14 @@
 
     <div class="actions">
       <button 
-        class="btn primary" 
+        class="btn btn-outline-primary"
         type="submit" 
         :disabled="submitting || !isFormValid"
       >
         {{ submitting ? 'Guardando...' : 'Crear Cita' }}
       </button>
       <button 
-        class="btn ghost" 
+        class="btn btn-outline-info"
         type="button" 
         @click="resetForm" 
         :disabled="submitting"

@@ -32,16 +32,16 @@
             <td>{{ patient.insuranceName }}</td>
             <td class="actions-cell">
               <button 
-                class="btn-link" 
+                class="btn btn-outline-primary btn.sm"
                 @click="$router.push(`/pacientes/editar/${patient.id}`)"
               >
                 Editar
               </button>
               <button 
-                class="btn-link danger" 
+              class="btn btn-outline-danger" 
                 @click="handleDelete(patient.id)"
               >
-                Eliminar
+                Borrar
               </button>
             </td>
           </tr>
@@ -131,6 +131,10 @@ onMounted(loadPatients);
 </script>
 
 <style scoped>
+
+
+
+
 .patient-list {
   width: 100%;
 }

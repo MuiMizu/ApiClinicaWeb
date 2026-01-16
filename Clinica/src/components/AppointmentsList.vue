@@ -4,14 +4,14 @@
       <input
         v-model="filters.date"
         type="date"
-        class="filter-input"
+        class="btn btn-outline-primary"
         placeholder="Fecha"
         @change="loadAppointments"
       />
       <select 
         v-model.number="filters.status" 
         @change="loadAppointments" 
-        class="filter-input"
+        class="btn btn-outline-primary"
       >
         <option :value="null">Todos los estados</option>
         <option :value="0">Programada</option>
@@ -56,14 +56,14 @@
             <td class="actions-cell">
               <button
                 v-if="appointment.status === 0"
-                class="btn-link"
+                class="btn btn-outline-primary"
                 @click="updateStatus(appointment.id, 1)"
               >
                 Marcar Atendida
               </button>
               <button
                 v-if="appointment.status === 0"
-                class="btn-link danger"
+                class="btn btn-outline-danger"
                 @click="updateStatus(appointment.id, 2)"
               >
                 Cancelar
