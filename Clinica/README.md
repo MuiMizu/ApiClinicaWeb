@@ -13,7 +13,7 @@ Frontend desarrollado con Vue 3, Vite, Vue Router y Axios.
 
 ## Instalación
 
-```bash
+``bash
 npm install
 ```
 
