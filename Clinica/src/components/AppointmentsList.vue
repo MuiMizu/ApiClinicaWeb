@@ -18,7 +18,7 @@
         <option :value="1">Atendida</option>
         <option :value="2">Cancelada</option>
       </select>
-      <button class="btn primary" @click="$router.push('/citas/nueva')">
+      <button class="btn btn-outline-primary" @click="$router.push('/citas/nueva')">
         + Nueva Cita
       </button>
     </FiltersBar>

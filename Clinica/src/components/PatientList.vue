@@ -1,7 +1,7 @@
 <template>
   <div class="patient-list">
     <FiltersBar :search="search" @search-change="handleSearchChange">
-      <button class="btn primary" @click="$router.push('/pacientes/nuevo')">
+      <button class="btn btn-outline-primary" @click="$router.push('/pacientes/nuevo')">
         + Nuevo Paciente
       </button>
     </FiltersBar>

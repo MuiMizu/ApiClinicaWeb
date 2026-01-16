@@ -4,8 +4,8 @@
       <div class="nav-content">
         <h1 class="nav-title">Sistema de Clínica</h1>
         <div class="nav-links">
-          <router-link to="/pacientes" class="nav-link">Pacientes</router-link>
-          <router-link to="/citas" class="nav-link">Citas</router-link>
+          <router-link to="/pacientes" class="btn btn-outline-primary">Pacientes</router-link>
+          <router-link to="/citas" class="btn btn-outline-primary">Citas</router-link>
         </div>
       </div>
     </nav>
