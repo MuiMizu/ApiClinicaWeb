@@ -118,6 +118,7 @@ main {
   font-size: 14px;
   transition: all 0.2s;
   background: white;
+  color: #0f172a;
 }
 
 .field input:focus,
@@ -132,6 +133,19 @@ main {
   background: #f9fafb;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.form-floating > label {
+  color: #6b7280;
+}
+
+.form-floating > .form-control {
+  color: #0f172a;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+  color: #6b7280;
 }
 
 .actions {

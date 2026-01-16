@@ -1,52 +1,76 @@
 <template>
   <form @submit.prevent="handleSubmit" class="patient-form">
     <div class="field">
-      <label>Nombre *</label>
-      <input 
-        v-model.trim="form.firstName" 
-        required 
-        placeholder="Juan"
-        :disabled="loading"
-      />
+      <div class="form-floating">
+        <input 
+          id="firstName"
+          v-model.trim="form.firstName" 
+          type="text"
+          class="form-control"
+          placeholder="Juan"
+          required
+          :disabled="loading"
+        />
+        <label for="firstName">Nombre *</label>
+      </div>
     </div>
 
     <div class="field">
-      <label>Apellido *</label>
-      <input 
-        v-model.trim="form.lastName" 
-        required 
-        placeholder="Pérez"
-        :disabled="loading"
-      />
+      <div class="form-floating">
+        <input 
+          id="lastName"
+          v-model.trim="form.lastName" 
+          type="text"
+          class="form-control"
+          placeholder="Pérez"
+          required
+          :disabled="loading"
+        />
+        <label for="lastName">Apellido *</label>
+      </div>
     </div>
 
     <div class="field">
-      <label>Documento *</label>
-      <input 
-        v-model.trim="form.document" 
-        required 
-        placeholder="DNI / ID"
-        :disabled="loading"
-      />
+      <div class="form-floating">
+        <input 
+          id="document"
+          v-model.trim="form.document" 
+          type="text"
+          class="form-control"
+          placeholder="DNI / ID"
+          required
+          :disabled="loading"
+        />
+        <label for="document">Documento *</label>
+      </div>
     </div>
 
     <div class="field">
-      <label>Teléfono</label>
-      <input 
-        v-model.trim="form.phone" 
-        placeholder="+1 999 999 9999"
-        :disabled="loading"
-      />
+      <div class="form-floating">
+        <input 
+          id="phone"
+          v-model.trim="form.phone" 
+          type="text"
+          class="form-control"
+          placeholder="+1 999 999 9999"
+          :disabled="loading"
+        />
+        <label for="phone">Teléfono</label>
+      </div>
     </div>
 
     <div class="field">
-      <label>Email</label>
-      <input 
-        v-model.trim="form.email" 
-        type="email" 
-        placeholder="correo@demo.com"
-        :disabled="loading"
-      />
+      <div class="form-floating">
+        <input 
+          id="email"
+          v-model.trim="form.email" 
+          type="email" 
+          class="form-control"
+          placeholder="correo@demo.com"
+          :disabled="loading"
+        />
+        <label for="email">Email</label>
+      </div>
     </div>
 
     <div class="field">

@@ -36,7 +36,7 @@
             <th>Hora</th>
             <th>Paciente</th>
             <th>Médico</th>
-            <th>Servicio</th>
+            <!-- <th>Servicio</th> -->
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -47,7 +47,7 @@
             <td>{{ appointment.time }}</td>
             <td>{{ appointment.patientName }}</td>
             <td>{{ appointment.doctorName }}</td>
-            <td>{{ appointment.serviceName || '-' }}</td>
+            <!-- <td>{{ appointment.serviceName || '-' }}</td> -->
             <td>
               <span :class="statusClass(appointment.status)">
                 {{ statusText(appointment.status) }}

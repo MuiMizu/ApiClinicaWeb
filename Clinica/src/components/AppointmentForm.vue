@@ -1,15 +1,18 @@
 <template>
   <form @submit.prevent="handleSubmit" class="appointment-form">
     <div class="field" style="position: relative">
-      <label>Paciente *</label>
-      <input
-        v-model="patientSearch"
-        type="text"
-        placeholder="Buscar por nombre o documento..."
-        @input="searchPatients"
-        class="patient-search"
-        :disabled="loadingPatients"
-      />
+      <div class="form-floating">
+        <input
+          id="patientSearch"
+          v-model="patientSearch"
+          type="text"
+          class="form-control patient-search"
+          placeholder="Buscar por nombre o documento..."
+          @input="searchPatients"
+          :disabled="loadingPatients"
+        />
+        <label for="patientSearch">Paciente *</label>
+      </div>
       <div v-if="patientSearch && filteredPatients.length > 0" class="patient-dropdown">
         <div
           v-for="p in filteredPatients"
@@ -43,16 +46,19 @@
       </select>
       <p v-if="loadingServices" class="note">Cargando servicios...</p>
     </div>
-
     <div class="field">
-      <label>Fecha *</label>
-      <input
-        v-model="form.date"
-        type="date"
-        :min="minDate"
-        required
-        @change="onDateChange"
-      />
+      <div class="form-floating">
+        <input
+          id="appointmentDate"
+          v-model="form.date"
+          type="date"
+          class="form-control"
+          :min="minDate"
+          required
+          @change="onDateChange"
+        />
+        <label for="appointmentDate">Fecha *</label>
+      </div>
     </div>
 
     <div class="field" v-if="form.serviceId && form.date">
