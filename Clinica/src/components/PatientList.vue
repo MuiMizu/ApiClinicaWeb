@@ -132,7 +132,9 @@ onMounted(loadPatients);
 
 <style scoped>
 
-
+*{
+  color: black;
+}
 
 
 .patient-list {

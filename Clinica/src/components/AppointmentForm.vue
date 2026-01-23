@@ -344,6 +344,11 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
+
+*{
+  color: black;
+}
+
 .appointment-form {
   display: flex;
   flex-direction: column;

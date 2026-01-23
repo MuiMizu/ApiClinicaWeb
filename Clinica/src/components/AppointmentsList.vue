@@ -157,6 +157,9 @@ onMounted(loadAppointments);
 </script>
 
 <style scoped>
+*{
+  color: black;
+}
 .appointments-list {
   width: 100%;
 }

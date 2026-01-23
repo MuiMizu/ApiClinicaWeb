@@ -31,6 +31,10 @@ defineEmits(['page-change']);
 </script>
 
 <style scoped>
+*{
+  color: black;
+}
+
 .paginator {
   display: flex;
   align-items: center;

@@ -23,6 +23,11 @@ const availabilityClass = computed(() => {
 </script>
 
 <style scoped>
+
+*{
+  color: black;
+}
+
 .availability-item {
   display: flex;
   justify-content: space-between;

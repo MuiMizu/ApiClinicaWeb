@@ -32,6 +32,10 @@ function handleSearch() {
 </script>
 
 <style scoped>
+*{
+  color: black;
+}
+
 .filters-bar {
   display: flex;
   gap: 12px;

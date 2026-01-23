@@ -224,6 +224,10 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
+*{
+  color: black;
+}
+
 .patient-form {
   display: flex;
   flex-direction: column;
