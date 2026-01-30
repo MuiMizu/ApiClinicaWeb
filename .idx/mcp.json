@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "firebase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firebase-tools@latest",
+        "experimental:mcp",
+        "--only",
+        "auth,firestore"
+      ]
+    },
+    "sqlserver": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@executeautomation/database-server",
+        "--sqlserver",
+        "--server",
+        "${SQL_SERVER}",
+        "--database",
+        "${SQL_DATABASE}",
+        "--user",
+        "${SQL_USER}",
+        "--password",
+        "${SQL_PASSWORD}"
+      ]
+    }
+  }
+}
