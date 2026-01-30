@@ -1,3 +1,60 @@
+# 📢 ACTUALIZACIÓN DE BASE DE DATOS (AUDITORÍA)
+
+Ejecutar el siguiente script para agregar campos de auditoría (`CreateDate`, `CreateBy`, `UpdateAt`, `UpdateBy`) a las tablas `Patients`, `Doctors` y `Appointments`.
+> **Nota:** La tabla `Appointments` ya cuenta con fecha de creación, por lo que solo se agregan los campos faltantes.
+
+```sql
+USE ClinicaDB;
+GO
+
+-- =============================================
+-- 1. Tabla: Patients
+-- =============================================
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'CreateDate' AND Object_ID = Object_ID(N'Patients'))
+    ALTER TABLE Patients ADD CreateDate DATETIME2 DEFAULT GETDATE();
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'CreateBy' AND Object_ID = Object_ID(N'Patients'))
+    ALTER TABLE Patients ADD CreateBy NVARCHAR(100) NULL;
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'UpdateAt' AND Object_ID = Object_ID(N'Patients'))
+    ALTER TABLE Patients ADD UpdateAt DATETIME2 NULL;
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'UpdateBy' AND Object_ID = Object_ID(N'Patients'))
+    ALTER TABLE Patients ADD UpdateBy NVARCHAR(100) NULL;
+GO
+
+-- =============================================
+-- 2. Tabla: Doctors
+-- =============================================
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'CreateDate' AND Object_ID = Object_ID(N'Doctors'))
+    ALTER TABLE Doctors ADD CreateDate DATETIME2 DEFAULT GETDATE();
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'CreateBy' AND Object_ID = Object_ID(N'Doctors'))
+    ALTER TABLE Doctors ADD CreateBy NVARCHAR(100) NULL;
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'UpdateAt' AND Object_ID = Object_ID(N'Doctors'))
+    ALTER TABLE Doctors ADD UpdateAt DATETIME2 NULL;
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'UpdateBy' AND Object_ID = Object_ID(N'Doctors'))
+    ALTER TABLE Doctors ADD UpdateBy NVARCHAR(100) NULL;
+GO
+
+-- =============================================
+-- 3. Tabla: Appointments
+-- =============================================
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'CreateBy' AND Object_ID = Object_ID(N'Appointments'))
+    ALTER TABLE Appointments ADD CreateBy NVARCHAR(100) NULL;
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'UpdateAt' AND Object_ID = Object_ID(N'Appointments'))
+    ALTER TABLE Appointments ADD UpdateAt DATETIME2 NULL;
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'UpdateBy' AND Object_ID = Object_ID(N'Appointments'))
+    ALTER TABLE Appointments ADD UpdateBy NVARCHAR(100) NULL;
+GO
+```
+
+---
+
 
 # Sistema de Clínica - Backend (C# .NET 8 + SQL Server)
 
