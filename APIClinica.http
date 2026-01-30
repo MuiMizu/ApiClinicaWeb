@@ -1,6 +1,0 @@
-@APIClinica_HostAddress = http://localhost:5186
-
-GET {{APIClinica_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
