@@ -22,6 +22,14 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn('Sesión no autorizada o expirada (401). Redirigiendo al login...');
+      localStorage.removeItem('token');
+      // Usamos window.location para asegurar un estado limpio al redirigir
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
     console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }

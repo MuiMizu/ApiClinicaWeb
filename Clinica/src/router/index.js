@@ -3,6 +3,8 @@ import PatientsList from '../views/PatientsList.vue';
 import PatientForm from '../views/PatientForm.vue';
 import AppointmentsList from '../views/AppointmentsList.vue';
 import AppointmentForm from '../views/AppointmentForm.vue';
+import DoctorsList from '../views/DoctorsList.vue';
+import DoctorForm from '../views/DoctorForm.vue';
 
 import LoginView from '../views/LoginView.vue';
 
@@ -14,6 +16,9 @@ const routes = [
   { path: '/pacientes/editar/:id', component: PatientForm, props: true },
   { path: '/citas', component: AppointmentsList },
   { path: '/citas/nueva', component: AppointmentForm },
+  { path: '/doctores', component: DoctorsList },
+  { path: '/doctores/nuevo', component: DoctorForm },
+  { path: '/doctores/editar/:id', component: DoctorForm, props: true },
 ];
 
 const router = createRouter({

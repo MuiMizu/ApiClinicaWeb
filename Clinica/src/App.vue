@@ -6,6 +6,7 @@
         <div class="nav-links">
           <router-link to="/pacientes" class="btn btn-outline-primary me-2">Pacientes</router-link>
           <router-link to="/citas" class="btn btn-outline-primary me-2">Citas</router-link>
+          <router-link to="/doctores" class="btn btn-outline-primary me-2">Doctores</router-link>
           <button @click="handleLogout" class="btn btn-outline-danger">Cerrar Sesión</button>
         </div>
       </div>

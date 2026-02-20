@@ -1,45 +1,45 @@
 <template>
-  <div class="patient-list">
+  <div class="doctor-list">
     <FiltersBar :search="search" @search-change="handleSearchChange">
-      <button class="btn btn-outline-primary" @click="$router.push('/pacientes/nuevo')">
-        + Nuevo Paciente
+      <button class="btn btn-outline-primary" @click="$router.push('/doctores/nuevo')">
+        + Nuevo Doctor
       </button>
     </FiltersBar>
 
-    <div v-if="loading" class="loading">Cargando pacientes...</div>
+    <div v-if="loading" class="loading">Cargando doctores...</div>
     <div v-else-if="error" class="error-text">{{ error }}</div>
-    <div v-else-if="patients.length === 0" class="empty">
-      No se encontraron pacientes
+    <div v-else-if="doctors.length === 0" class="empty">
+      No se encontraron doctores
     </div>
     <div v-else>
       <table class="table">
         <thead>
           <tr>
             <th>Nombre Completo</th>
-            <th>Documento</th>
+            <th>Especialidad</th>
+            <th>Licencia</th>
             <th>Teléfono</th>
             <th>Email</th>
-            <th>Seguro</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="patient in patients" :key="patient.id">
-            <td>{{ patient.firstName }} {{ patient.lastName }}</td>
-            <td>{{ patient.document }}</td>
-            <td>{{ patient.phone || '-' }}</td>
-            <td>{{ patient.email || '-' }}</td>
-            <td>{{ patient.insuranceName }}</td>
+          <tr v-for="doctor in doctors" :key="doctor.id">
+            <td>{{ doctor.firstName }} {{ doctor.lastName }}</td>
+            <td>{{ doctor.specialty || '-' }}</td>
+            <td>{{ doctor.licenseNumber || '-' }}</td>
+            <td>{{ doctor.phone || '-' }}</td>
+            <td>{{ doctor.email || '-' }}</td>
             <td class="actions-cell">
               <button 
                 class="btn btn-outline-primary btn-sm"
-                @click="$router.push(`/pacientes/editar/${patient.id}`)"
+                @click="$router.push(`/doctores/editar/${doctor.id}`)"
               >
                 Editar
               </button>
               <button 
                 class="btn btn-outline-danger" 
-                @click="handleDelete(patient.id)"
+                @click="handleDelete(doctor.id)"
               >
                 Borrar
               </button>
@@ -62,12 +62,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { fetchPatients, deletePatient } from '../api/patients';
+import { fetchDoctors, deleteDoctor } from '../api/doctors';
 import FiltersBar from './FiltersBar.vue';
 import Paginator from './Paginator.vue';
 
 const router = useRouter();
-const patients = ref([]);
+const doctors = ref([]);
 const loading = ref(false);
 const error = ref('');
 const search = ref('');
@@ -76,35 +76,34 @@ const pageSize = 10;
 const totalPages = ref(1);
 const totalItems = ref(0);
 
-async function loadPatients() {
+async function loadDoctors() {
   loading.value = true;
   error.value = '';
   try {
-    const result = await fetchPatients(currentPage.value, pageSize, search.value || null);
-    console.log('API Response:', result);
+    const result = await fetchDoctors(currentPage.value, pageSize, search.value || null);
+    console.log('Doctors API Response:', result);
     
-    // Manejo robusto: soporta tanto objeto paginado como array directo
     if (Array.isArray(result)) {
-      patients.value = result;
+      doctors.value = result;
       totalItems.value = result.length;
       totalPages.value = 1;
     } else {
-      patients.value = result.items || [];
+      doctors.value = result.items || [];
       currentPage.value = result.currentPage || 1;
       totalPages.value = result.totalPages || 1;
       totalItems.value = result.totalItems || 0;
     }
   } catch (err) {
     if (err.response?.status === 401) {
-      error.value = 'Sesión no autorizada. Redirigiendo...';
+      error.value = 'Sesión no autorizada (401).';
     } else if (err.response?.status === 500) {
       error.value = 'Api no disponible';
     } else {
-      const errorMessage = err.response?.data?.message || err.message || 'Error al cargar pacientes';
+      const errorMessage = err.response?.data?.message || err.message || 'Error al cargar doctores';
       error.value = `Error: ${errorMessage}`;
     }
-    console.error('Error loading patients:', err);
-    patients.value = [];
+    console.error('Error loading doctors:', err);
+    doctors.value = [];
   } finally {
     loading.value = false;
   }
@@ -113,40 +112,38 @@ async function loadPatients() {
 function handleSearchChange(value) {
   search.value = value;
   currentPage.value = 1;
-  loadPatients();
+  loadDoctors();
 }
 
 function handlePageChange(page) {
   currentPage.value = page;
-  loadPatients();
+  loadDoctors();
 }
 
 async function handleDelete(id) {
-  if (!confirm('¿Estás seguro de eliminar este paciente?')) return;
+  if (!confirm('¿Estás seguro de eliminar este doctor?')) return;
   try {
-    await deletePatient(id);
-    await loadPatients();
+    await deleteDoctor(id);
+    await loadDoctors();
   } catch (err) {
     if (err.response?.status === 500) {
       alert('Api no disponible');
     } else {
-      alert('Error al eliminar el paciente');
+      alert('Error al eliminar el doctor');
     }
     console.error(err);
   }
 }
 
-onMounted(loadPatients);
+onMounted(loadDoctors);
 </script>
 
 <style scoped>
-
-*{
+* {
   color: black;
 }
 
-
-.patient-list {
+.doctor-list {
   width: 100%;
 }
 
@@ -182,28 +179,6 @@ onMounted(loadPatients);
   gap: 12px;
 }
 
-.btn-link {
-  background: none;
-  border: none;
-  color: #2563eb;
-  cursor: pointer;
-  text-decoration: underline;
-  font-size: 14px;
-  padding: 0;
-}
-
-.btn-link:hover {
-  color: #1d4ed8;
-}
-
-.btn-link.danger {
-  color: #dc2626;
-}
-
-.btn-link.danger:hover {
-  color: #b91c1c;
-}
-
 .loading,
 .empty {
   padding: 40px;
@@ -219,4 +194,3 @@ onMounted(loadPatients);
   font-size: 16px;
 }
 </style>
-

@@ -102,10 +102,23 @@ async function loadAppointments() {
     if (filters.value.date) filterParams.date = filters.value.date;
     if (filters.value.status !== null) filterParams.status = filters.value.status;
     
-    appointments.value = await fetchAppointments(filterParams);
+    const result = await fetchAppointments(filterParams);
+    console.log('Appointments API Response:', result);
+
+    if (Array.isArray(result)) {
+      appointments.value = result;
+    } else if (result && result.items) {
+      appointments.value = result.items;
+    } else {
+      appointments.value = [];
+    }
   } catch (err) {
-    error.value = 'Error al cargar citas';
-    console.error(err);
+    if (err.response?.status === 401) {
+      error.value = 'Sesión expirada o no autorizada (401).';
+    } else {
+      error.value = 'Error al cargar citas';
+    }
+    console.error('Error in loadAppointments:', err);
   } finally {
     loading.value = false;
   }
