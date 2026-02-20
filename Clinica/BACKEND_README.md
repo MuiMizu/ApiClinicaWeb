@@ -525,8 +525,15 @@ namespace APIClinica.Data
   "AllowedHosts": "*",
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost;Database=ClinicaDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+  },
+  "JwtSettings": {
+    "SecretKey": "EstaEsUnaClaveSecretaMuySeguraParaMiAplicacionClinica2024!",
+    "Issuer": "APIClinica",
+    "Audience": "APIClinicaFrontend",
+    "DurationInMinutes": 60
   }
 }
+
 ```
 
 ### Program.cs
@@ -539,13 +546,75 @@ using APIClinica.Repositories;
 using APIClinica.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+// Configuración de Swagger con soporte para JWT
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API Clínica", Version = "v1" });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
+});
+
+// Configuración de JWT
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings.GetValue<string>("SecretKey");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false; // En desarrollo
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!)),
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings.GetValue<string>("Issuer"),
+        ValidateAudience = true,
+        ValidAudience = jwtSettings.GetValue<string>("Audience"),
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
 // Database
 builder.Services.AddDbContext<ClinicaDbContext>(options =>
@@ -564,7 +633,9 @@ builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 
 // Services (deben ir después de los repositorios que dependen)
 builder.Services.AddScoped<IPatientService, PatientService>();
+
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
 
 // Health Checks
 builder.Services.AddHealthChecks()
@@ -596,6 +667,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+
+app.UseAuthentication(); // AGREGAR ESTA LÍNEA
 app.UseAuthorization();
 app.MapControllers();
 
@@ -767,6 +840,27 @@ namespace APIClinica.DTOs
     {
         public string Time { get; set; } = string.Empty;
         public int AvailableSlots { get; set; }
+    }
+    }
+
+    public class DoctorDTO
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string? Specialty { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public bool Active { get; set; }
+    }
+
+    public class CreateDoctorDTO
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string? Specialty { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
     }
 }   
 ```
@@ -1538,6 +1632,176 @@ namespace APIClinica.Services
 
 ---
 
+### IDoctorService.cs
+
+```csharp
+using APIClinica.DTOs;
+
+namespace APIClinica.Services
+{
+    public interface IDoctorService
+    {
+        Task<List<DoctorDTO>> GetAllAsync(string? search = null);
+        Task<DoctorDTO?> GetByIdAsync(int id);
+        Task<DoctorDTO> CreateAsync(CreateDoctorDTO dto);
+        Task UpdateAsync(int id, CreateDoctorDTO dto);
+        Task<bool> DeleteAsync(int id);
+        Task<List<AvailableDoctorDTO>> GetAvailableDoctorsAsync(int serviceId, DateTime date);
+    }
+}
+```
+
+### DoctorService.cs
+
+```csharp
+using APIClinica.DTOs;
+using APIClinica.Models;
+using APIClinica.Repositories;
+using APIClinica.Models.Enums;
+
+namespace APIClinica.Services
+{
+    public class DoctorService : IDoctorService
+    {
+        private readonly IDoctorRepository _doctorRepository;
+        private readonly IAppointmentRepository _appointmentRepository;
+
+        public DoctorService(IDoctorRepository doctorRepository, IAppointmentRepository appointmentRepository)
+        {
+            _doctorRepository = doctorRepository;
+            _appointmentRepository = appointmentRepository;
+        }
+
+        public async Task<List<DoctorDTO>> GetAllAsync(string? search = null)
+        {
+            var doctors = await _doctorRepository.GetActiveDoctorsAsync();
+            
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                doctors = doctors.Where(d => 
+                    d.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase) || 
+                    d.LastName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    (d.Specialty != null && d.Specialty.Contains(search, StringComparison.OrdinalIgnoreCase))
+                );
+            }
+
+            return doctors.Select(d => new DoctorDTO
+            {
+                Id = d.Id,
+                FirstName = d.FirstName,
+                LastName = d.LastName,
+                Specialty = d.Specialty,
+                Phone = d.Phone,
+                Email = d.Email,
+                Active = d.Active
+            }).ToList();
+        }
+
+        public async Task<DoctorDTO?> GetByIdAsync(int id)
+        {
+            var d = await _doctorRepository.GetByIdAsync(id);
+            if (d == null) return null;
+
+            return new DoctorDTO
+            {
+                Id = d.Id,
+                FirstName = d.FirstName,
+                LastName = d.LastName,
+                Specialty = d.Specialty,
+                Phone = d.Phone,
+                Email = d.Email,
+                Active = d.Active
+            };
+        }
+
+        public async Task<DoctorDTO> CreateAsync(CreateDoctorDTO dto)
+        {
+            var doctor = new Doctor
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Specialty = dto.Specialty,
+                Phone = dto.Phone,
+                Email = dto.Email,
+                Active = true
+            };
+
+            await _doctorRepository.AddAsync(doctor);
+            await _doctorRepository.SaveChangesAsync();
+
+            return await GetByIdAsync(doctor.Id) ?? throw new Exception("Error creating doctor");
+        }
+
+        public async Task UpdateAsync(int id, CreateDoctorDTO dto)
+        {
+            var doctor = await _doctorRepository.GetByIdAsync(id);
+            if (doctor == null) throw new KeyNotFoundException("Doctor not found");
+
+            doctor.FirstName = dto.FirstName;
+            doctor.LastName = dto.LastName;
+            doctor.Specialty = dto.Specialty;
+            doctor.Phone = dto.Phone;
+            doctor.Email = dto.Email;
+
+            _doctorRepository.Update(doctor);
+            await _doctorRepository.SaveChangesAsync();
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var doctor = await _doctorRepository.GetByIdAsync(id);
+            if (doctor == null) return false;
+
+            // Soft delete
+            doctor.Active = false;
+            _doctorRepository.Update(doctor);
+            await _doctorRepository.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<AvailableDoctorDTO>> GetAvailableDoctorsAsync(int serviceId, DateTime date)
+        {
+            // Reuse logic from AppointmentService or refactor
+             var doctors = await _doctorRepository.GetDoctorsByServiceAsync(serviceId);
+
+            var availableDoctors = new List<AvailableDoctorDTO>();
+
+            foreach (var doctor in doctors)
+            {
+                var appointmentsOfDay = await _appointmentRepository
+                    .FindAsync(a => a.DoctorId == doctor.Id &&
+                                   a.Date.Date == date.Date &&
+                                   a.Status == AppointmentStatus.Scheduled);
+
+                var appointmentsByTime = appointmentsOfDay
+                    .GroupBy(a => a.Time)
+                    .Select(g => new { Time = g.Key, Count = g.Count() })
+                    .ToList();
+
+                // Check if there's at least one available hour
+                var occupiedHours = appointmentsByTime.Where(a => a.Count >= 2).Count();
+                var totalHours = 10; // 8:00 to 17:00
+
+                if (occupiedHours < totalHours)
+                {
+                    availableDoctors.Add(new AvailableDoctorDTO
+                    {
+                        Id = doctor.Id,
+                        FirstName = doctor.FirstName,
+                        LastName = doctor.LastName,
+                        Specialty = doctor.Specialty
+                    });
+                }
+            }
+
+            return availableDoctors;
+        }
+    }
+}
+```
+
+---
+
 ## Controllers (Controladores)
 
 ### PatientsController.cs
@@ -1690,9 +1954,9 @@ namespace APIClinica.Controllers
 
 ### DoctorsController.cs
 
-```csharp
 using Microsoft.AspNetCore.Mvc;
 using APIClinica.Services;
+using APIClinica.DTOs;
 
 namespace APIClinica.Controllers
 {
@@ -1700,17 +1964,63 @@ namespace APIClinica.Controllers
     [Route("api/[controller]")]
     public class DoctorsController : ControllerBase
     {
-        private readonly IAppointmentService _appointmentService;
+        private readonly IDoctorService _service;
 
-        public DoctorsController(IAppointmentService appointmentService)
+        public DoctorsController(IDoctorService service)
         {
-            _appointmentService = appointmentService;
+            _service = service;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetAll([FromQuery] string? search = null)
+        {
+            var doctors = await _service.GetAllAsync(search);
+            return Ok(doctors);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<DoctorDTO>> GetById(int id)
+        {
+            var doctor = await _service.GetByIdAsync(id);
+            if (doctor == null)
+                return NotFound();
+            return Ok(doctor);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<DoctorDTO>> Create([FromBody] CreateDoctorDTO dto)
+        {
+            var doctor = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = doctor.Id }, doctor);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update(int id, [FromBody] CreateDoctorDTO dto)
+        {
+            try
+            {
+                await _service.UpdateAsync(id, dto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var result = await _service.DeleteAsync(id);
+            if (!result)
+                return NotFound();
+            return NoContent();
         }
 
         [HttpGet("available")]
         public async Task<ActionResult> GetAvailable([FromQuery] int serviceId, [FromQuery] DateTime date)
         {
-            var doctors = await _appointmentService.GetAvailableDoctorsAsync(serviceId, date);
+            var doctors = await _service.GetAvailableDoctorsAsync(serviceId, date);
             return Ok(doctors);
         }
     }
