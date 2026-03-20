@@ -85,7 +85,6 @@ const handleLogin = async () => {
   error.value = '';
   
   try {
-    // Usamos la ruta relativa /api/... gracias al proxy configurado en vite.config.js
     const response = await axios.post('/api/auth/login', {
       username: username.value,
       password: password.value
@@ -93,7 +92,7 @@ const handleLogin = async () => {
 
     if (response.data && response.data.token) {
       login(response.data.token);
-      router.push('/pacientes');
+      router.push('/');
     } else {
       error.value = 'Respuesta inesperada del servidor';
     }
@@ -112,7 +111,7 @@ const handleLogin = async () => {
 const saveManualToken = () => {
   if (manualToken.value.trim()) {
     login(manualToken.value.trim());
-    router.push('/pacientes');
+    router.push('/');
   }
 };
 </script>
@@ -144,7 +143,6 @@ const saveManualToken = () => {
   margin-bottom: 0.5rem;
 }
 
-/* Glassmorphism Card */
 .glass-card {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
@@ -153,7 +151,6 @@ const saveManualToken = () => {
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
-/* Glass Inputs */
 .glass-input {
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -168,7 +165,6 @@ const saveManualToken = () => {
   box-shadow: 0 0 0 0.2rem rgba(118, 75, 162, 0.25);
 }
 
-/* Glass Buttons */
 .glass-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;

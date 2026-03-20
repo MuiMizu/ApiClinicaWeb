@@ -15,6 +15,7 @@ import LoginView from '../views/LoginView.vue';
 
 const routes = [
   { path: '/', redirect: '/pacientes' },
+
   { path: '/login', component: LoginView },
   { path: '/pacientes', component: PatientsList },
   { path: '/pacientes/nuevo', component: PatientForm },

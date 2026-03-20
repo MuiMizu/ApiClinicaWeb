@@ -33,7 +33,7 @@
               </button>
               <button 
                 class="btn btn-outline-danger" 
-                @click="handleDelete(insurance.id)"
+                @click="handleDelete(insurance)"
               >
                 Borrar
               </button>
@@ -42,6 +42,15 @@
         </tbody>
       </table>
     </div>
+
+    <ConfirmationModal
+      :show="showDeleteModal"
+      title="Eliminar Seguro"
+      :message="`¿Estás seguro de que deseas eliminar el seguro ${insuranceToDelete?.name}?`"
+      confirmText="Eliminar"
+      @confirm="executeDelete"
+      @cancel="showDeleteModal = false"
+    />
   </div>
 </template>
 
@@ -50,12 +59,38 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { fetchInsurances, deleteInsurance } from '../api/insurances';
 import FiltersBar from './FiltersBar.vue';
+import ConfirmationModal from './ConfirmationModal.vue';
 
 const router = useRouter();
 const insurances = ref([]);
 const loading = ref(false);
 const error = ref('');
 const search = ref('');
+
+const showDeleteModal = ref(false);
+const insuranceToDelete = ref(null);
+
+function handleDelete(insurance) {
+  insuranceToDelete.value = insurance;
+  showDeleteModal.value = true;
+}
+
+async function executeDelete() {
+  if (!insuranceToDelete.value) return;
+  try {
+    await deleteInsurance(insuranceToDelete.value.id);
+    showDeleteModal.value = false;
+    insuranceToDelete.value = null;
+    await loadInsurances();
+  } catch (err) {
+    if (err.response?.status === 500) {
+      alert('Api no disponible');
+    } else {
+      alert('Error al eliminar el seguro');
+    }
+    console.error(err);
+  }
+}
 
 async function loadInsurances() {
   loading.value = true;
@@ -88,20 +123,6 @@ function handleSearchChange(value) {
   loadInsurances(); 
 }
 
-async function handleDelete(id) {
-  if (!confirm('¿Estás seguro de eliminar este seguro?')) return;
-  try {
-    await deleteInsurance(id);
-    await loadInsurances();
-  } catch (err) {
-    if (err.response?.status === 500) {
-      alert('Api no disponible');
-    } else {
-      alert('Error al eliminar el seguro');
-    }
-    console.error(err);
-  }
-}
 
 onMounted(loadInsurances);
 </script>

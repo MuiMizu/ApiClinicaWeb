@@ -39,7 +39,7 @@
               </button>
               <button 
                 class="btn btn-outline-danger" 
-                @click="handleDelete(doctor.id)"
+                @click="handleDelete(doctor)"
               >
                 Borrar
               </button>
@@ -56,6 +56,15 @@
         @page-change="handlePageChange"
       />
     </div>
+
+    <ConfirmationModal
+      :show="showDeleteModal"
+      title="Eliminar Doctor"
+      :message="`¿Estás seguro de que deseas eliminar al Dr. ${doctorToDelete?.firstName} ${doctorToDelete?.lastName}?`"
+      confirmText="Eliminar"
+      @confirm="executeDelete"
+      @cancel="showDeleteModal = false"
+    />
   </div>
 </template>
 
@@ -65,6 +74,7 @@ import { useRouter } from 'vue-router';
 import { fetchDoctors, deleteDoctor } from '../api/doctors';
 import FiltersBar from './FiltersBar.vue';
 import Paginator from './Paginator.vue';
+import ConfirmationModal from './ConfirmationModal.vue';
 
 const router = useRouter();
 const doctors = ref([]);
@@ -75,6 +85,31 @@ const currentPage = ref(1);
 const pageSize = 10;
 const totalPages = ref(1);
 const totalItems = ref(0);
+
+const showDeleteModal = ref(false);
+const doctorToDelete = ref(null);
+
+function handleDelete(doctor) {
+  doctorToDelete.value = doctor;
+  showDeleteModal.value = true;
+}
+
+async function executeDelete() {
+  if (!doctorToDelete.value) return;
+  try {
+    await deleteDoctor(doctorToDelete.value.id);
+    showDeleteModal.value = false;
+    doctorToDelete.value = null;
+    await loadDoctors();
+  } catch (err) {
+    if (err.response?.status === 500) {
+      alert('Api no disponible');
+    } else {
+      alert('Error al eliminar el doctor');
+    }
+    console.error(err);
+  }
+}
 
 async function loadDoctors() {
   loading.value = true;
@@ -120,20 +155,6 @@ function handlePageChange(page) {
   loadDoctors();
 }
 
-async function handleDelete(id) {
-  if (!confirm('¿Estás seguro de eliminar este doctor?')) return;
-  try {
-    await deleteDoctor(id);
-    await loadDoctors();
-  } catch (err) {
-    if (err.response?.status === 500) {
-      alert('Api no disponible');
-    } else {
-      alert('Error al eliminar el doctor');
-    }
-    console.error(err);
-  }
-}
 
 onMounted(loadDoctors);
 </script>

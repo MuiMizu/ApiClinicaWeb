@@ -1,34 +1,30 @@
 <template>
   <div id="app">
-    <nav class="navbar" v-if="authState.isLoggedIn">
-      <div class="nav-content">
-        <h1 class="nav-title">Sistema de Clínica</h1>
-        <div class="nav-links">
-          <router-link to="/pacientes" class="btn btn-outline-primary me-2">Pacientes</router-link>
-          <router-link to="/citas" class="btn btn-outline-primary me-2">Citas</router-link>
-          <router-link to="/doctores" class="btn btn-outline-primary me-2">Doctores</router-link>
-          <router-link to="/servicios" class="btn btn-outline-primary me-2">Servicios</router-link>
-          <router-link to="/seguros" class="btn btn-outline-primary me-2">Seguros</router-link>
-          <button @click="handleLogout" class="btn btn-outline-danger">Cerrar Sesión</button>
-
-        </div>
-      </div>
-    </nav>
-    <main>
+    <!-- Use MainLayout only if logged in -->
+    <MainLayout v-if="authState.isLoggedIn">
       <router-view />
-    </main>
+    </MainLayout>
+    
+    <!-- Otherwise, just show the router-view (Login page covers screen anyway) -->
+    <router-view v-else />
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
-import { authState, logout } from './stores/auth';
-
-const router = useRouter();
-
-const handleLogout = () => {
-    logout();
-    router.push('/login');
-};
+import { authState } from './stores/auth';
+import MainLayout from './components/MainLayout.vue';
 </script>
+
+<style>
+/* Reset some body/app styles to fit the new layout */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa !important; /* Ensure the light background for dashboard */
+}
+
+#app {
+  min-height: 100vh;
+}
+</style>
 

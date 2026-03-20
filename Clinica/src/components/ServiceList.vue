@@ -33,7 +33,7 @@
               </button>
               <button 
                 class="btn btn-outline-danger" 
-                @click="handleDelete(service.id)"
+                @click="handleDelete(service)"
               >
                 Borrar
               </button>
@@ -42,6 +42,15 @@
         </tbody>
       </table>
     </div>
+
+    <ConfirmationModal
+      :show="showDeleteModal"
+      title="Eliminar Servicio"
+      :message="`¿Estás seguro de que deseas eliminar el servicio ${serviceToDelete?.name}?`"
+      confirmText="Eliminar"
+      @confirm="executeDelete"
+      @cancel="showDeleteModal = false"
+    />
   </div>
 </template>
 
@@ -50,12 +59,38 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { fetchServices, deleteService } from '../api/services';
 import FiltersBar from './FiltersBar.vue';
+import ConfirmationModal from './ConfirmationModal.vue';
 
 const router = useRouter();
 const services = ref([]);
 const loading = ref(false);
 const error = ref('');
 const search = ref('');
+
+const showDeleteModal = ref(false);
+const serviceToDelete = ref(null);
+
+function handleDelete(service) {
+  serviceToDelete.value = service;
+  showDeleteModal.value = true;
+}
+
+async function executeDelete() {
+  if (!serviceToDelete.value) return;
+  try {
+    await deleteService(serviceToDelete.value.id);
+    showDeleteModal.value = false;
+    serviceToDelete.value = null;
+    await loadServices();
+  } catch (err) {
+    if (err.response?.status === 500) {
+      alert('Api no disponible');
+    } else {
+      alert('Error al eliminar el servicio');
+    }
+    console.error(err);
+  }
+}
 
 async function loadServices() {
   loading.value = true;
@@ -92,20 +127,6 @@ function handleSearchChange(value) {
   loadServices(); 
 }
 
-async function handleDelete(id) {
-  if (!confirm('¿Estás seguro de eliminar este servicio?')) return;
-  try {
-    await deleteService(id);
-    await loadServices();
-  } catch (err) {
-    if (err.response?.status === 500) {
-      alert('Api no disponible');
-    } else {
-      alert('Error al eliminar el servicio');
-    }
-    console.error(err);
-  }
-}
 
 onMounted(loadServices);
 </script>

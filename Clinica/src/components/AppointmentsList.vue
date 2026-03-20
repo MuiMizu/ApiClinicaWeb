@@ -36,7 +36,6 @@
             <th>Hora</th>
             <th>Paciente</th>
             <th>Médico</th>
-            <!-- <th>Servicio</th> -->
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -47,7 +46,6 @@
             <td>{{ appointment.time }}</td>
             <td>{{ appointment.patientName }}</td>
             <td>{{ appointment.doctorName }}</td>
-            <!-- <td>{{ appointment.serviceName || '-' }}</td> -->
             <td>
               <span :class="statusClass(appointment.status)">
                 {{ statusText(appointment.status) }}
@@ -116,7 +114,7 @@ async function loadAppointments() {
     if (err.response?.status === 401) {
       error.value = 'Sesión expirada o no autorizada (401).';
     } else {
-      error.value = 'Error al cargar citas';
+      error.value = 'Api no disponible';
     }
     console.error('Error in loadAppointments:', err);
   } finally {
