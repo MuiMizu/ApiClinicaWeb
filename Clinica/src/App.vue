@@ -8,6 +8,7 @@
           <router-link to="/citas" class="btn btn-outline-primary me-2">Citas</router-link>
           <router-link to="/doctores" class="btn btn-outline-primary me-2">Doctores</router-link>
           <router-link to="/servicios" class="btn btn-outline-primary me-2">Servicios</router-link>
+          <router-link to="/seguros" class="btn btn-outline-primary me-2">Seguros</router-link>
           <button @click="handleLogout" class="btn btn-outline-danger">Cerrar Sesión</button>
 
         </div>

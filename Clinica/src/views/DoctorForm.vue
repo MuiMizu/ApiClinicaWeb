@@ -30,6 +30,8 @@ function onSaved() {
 <style scoped>
 .page-container {
   padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .page-header {
@@ -61,6 +63,5 @@ function onSaved() {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 24px;
-  max-width: 600px;
 }
 </style>

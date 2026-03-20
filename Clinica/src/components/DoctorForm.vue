@@ -5,6 +5,8 @@
         <input 
           id="firstName"
           v-model.trim="form.firstName" 
+          @input="form.firstName = form.firstName.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
+          maxlength="32"
           type="text"
           class="form-control"
           placeholder="Nombre"
@@ -20,6 +22,8 @@
         <input 
           id="lastName"
           v-model.trim="form.lastName" 
+          @input="form.lastName = form.lastName.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
+          maxlength="32"
           type="text"
           class="form-control"
           placeholder="Apellido"
@@ -32,16 +36,19 @@
 
     <div class="field">
       <div class="form-floating">
-        <input 
+        <select 
           id="specialty"
-          v-model.trim="form.specialty" 
-          type="text"
-          class="form-control"
-          placeholder="Especialidad"
+          v-model="form.specialty" 
+          class="form-select"
           required
           :disabled="loading"
-        />
-        <label for="specialty">Especialidad *</label>
+        >
+          <option value="" disabled>Seleccione un servicio</option>
+          <option v-for="service in availableServices" :key="service.id" :value="service.name">
+            {{ service.name }}
+          </option>
+        </select>
+        <label for="specialty">Servicio *</label>
       </div>
     </div>
 
@@ -64,6 +71,8 @@
         <input 
           id="phone"
           v-model.trim="form.phone" 
+          @input="form.phone = form.phone.replace(/[^0-9+ ]/g, '')"
+          maxlength="16"
           type="text"
           class="form-control"
           placeholder="Teléfono"
@@ -111,6 +120,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { createDoctor, updateDoctor, fetchDoctorById } from '../api/doctors';
+import { fetchServices } from '../api/services';
 
 const props = defineProps({
   doctorId: { type: Number, default: null },
@@ -118,6 +128,7 @@ const props = defineProps({
 
 const emit = defineEmits(['saved']);
 
+const availableServices = ref([]);
 const submitting = ref(false);
 const loading = ref(false);
 const message = ref('');
@@ -140,10 +151,20 @@ const messageClass = computed(() => {
 });
 
 onMounted(async () => {
+  await loadServices();
   if (props.doctorId) {
     await loadDoctor();
   }
 });
+
+async function loadServices() {
+  try {
+    const result = await fetchServices();
+    availableServices.value = Array.isArray(result) ? result : (result.items || []);
+  } catch (err) {
+    console.error('Error al cargar servicios:', err);
+  }
+}
 
 async function loadDoctor() {
   loading.value = true;
@@ -213,6 +234,8 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
+
+
 * {
   color: black;
 }
@@ -221,6 +244,12 @@ async function handleSubmit() {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .error-text {

@@ -5,6 +5,8 @@
         <input 
           id="firstName"
           v-model.trim="form.firstName" 
+          @input="form.firstName = form.firstName.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
+          maxlength="32"
           type="text"
           class="form-control"
           placeholder="Juan"
@@ -20,6 +22,8 @@
         <input 
           id="lastName"
           v-model.trim="form.lastName" 
+          @input="form.lastName = form.lastName.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
+          maxlength="32"
           type="text"
           class="form-control"
           placeholder="Pérez"
@@ -35,6 +39,7 @@
         <input 
           id="document"
           v-model.trim="form.document" 
+          maxlength="16"
           type="text"
           class="form-control"
           placeholder="DNI / ID"
@@ -50,6 +55,8 @@
         <input 
           id="phone"
           v-model.trim="form.phone" 
+          @input="form.phone = form.phone.replace(/[^0-9+ ]/g, '')"
+          maxlength="16"
           type="text"
           class="form-control"
           placeholder="+1 999 999 9999"

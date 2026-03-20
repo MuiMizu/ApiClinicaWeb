@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="service-form">
+  <form @submit.prevent="handleSubmit" class="insurance-form">
     <div class="field">
       <div class="form-floating">
         <input 
@@ -8,7 +8,7 @@
           maxlength="32"
           type="text"
           class="form-control"
-          placeholder="Nombre del Servicio"
+          placeholder="Nombre del Seguro"
           required
           :disabled="loading"
         />
@@ -53,10 +53,10 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
-import { createService, updateService, fetchServiceById } from '../api/services';
+import { createInsurance, updateInsurance, fetchInsuranceById } from '../api/insurances';
 
 const props = defineProps({
-  serviceId: { type: Number, default: null },
+  insuranceId: { type: [Number, String], default: null },
 });
 
 const emit = defineEmits(['saved']);
@@ -70,7 +70,7 @@ const form = reactive({
   description: '',
 });
 
-const isEdit = computed(() => !!props.serviceId);
+const isEdit = computed(() => !!props.insuranceId);
 
 const messageClass = computed(() => {
   return message.value.includes('Error') || message.value.includes('error') 
@@ -79,19 +79,19 @@ const messageClass = computed(() => {
 });
 
 onMounted(async () => {
-  if (props.serviceId) {
-    await loadService();
+  if (props.insuranceId) {
+    await loadInsurance();
   }
 });
 
-async function loadService() {
+async function loadInsurance() {
   loading.value = true;
   try {
-    const service = await fetchServiceById(props.serviceId);
-    form.name = service.name;
-    form.description = service.description || '';
+    const insurance = await fetchInsuranceById(props.insuranceId);
+    form.name = insurance.name;
+    form.description = insurance.description || '';
   } catch (err) {
-    message.value = 'Error al cargar el servicio';
+    message.value = 'Error al cargar el seguro';
     console.error(err);
   } finally {
     loading.value = false;
@@ -100,7 +100,7 @@ async function loadService() {
 
 function resetForm() {
   if (isEdit.value) {
-    loadService();
+    loadInsurance();
   } else {
     form.name = '';
     form.description = '';
@@ -118,12 +118,12 @@ async function handleSubmit() {
       description: form.description || null,
     };
     
-    if (props.serviceId) {
-      await updateService(props.serviceId, payload);
-      message.value = 'Servicio actualizado exitosamente';
+    if (props.insuranceId) {
+      await updateInsurance(props.insuranceId, payload);
+      message.value = 'Seguro actualizado exitosamente';
     } else {
-      await createService(payload);
-      message.value = 'Servicio creado exitosamente';
+      await createInsurance(payload);
+      message.value = 'Seguro creado exitosamente';
       resetForm();
     }
     
@@ -131,7 +131,7 @@ async function handleSubmit() {
       emit('saved');
     }, 1500);
   } catch (err) {
-    message.value = err?.response?.data?.message || 'Error al guardar el servicio';
+    message.value = err?.response?.data?.message || 'Error al guardar el seguro';
     console.error(err);
   } finally {
     submitting.value = false;
@@ -144,7 +144,7 @@ async function handleSubmit() {
   color: black;
 }
 
-.service-form {
+.insurance-form {
   display: flex;
   flex-direction: column;
   gap: 16px;

@@ -7,6 +7,8 @@ import DoctorsList from '../views/DoctorsList.vue';
 import DoctorForm from '../views/DoctorForm.vue';
 import ServicesList from '../views/ServicesList.vue';
 import ServiceForm from '../views/ServiceForm.vue';
+import InsurancesList from '../views/InsurancesList.vue';
+import InsuranceForm from '../views/InsuranceForm.vue';
 
 
 import LoginView from '../views/LoginView.vue';
@@ -25,6 +27,9 @@ const routes = [
   { path: '/servicios', component: ServicesList },
   { path: '/servicios/nuevo', component: ServiceForm },
   { path: '/servicios/editar/:id', component: ServiceForm, props: true },
+  { path: '/seguros', component: InsurancesList },
+  { path: '/seguros/nuevo', component: InsuranceForm },
+  { path: '/seguros/editar/:id', component: InsuranceForm, props: true },
 
 ];
 
