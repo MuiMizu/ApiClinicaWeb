@@ -133,6 +133,7 @@ const insurances = ref([]);
 const submitting = ref(false);
 const loading = ref(false);
 const message = ref('');
+const isError = ref(false);
 
 const form = reactive({
   firstName: '',
@@ -146,9 +147,7 @@ const form = reactive({
 const isEdit = computed(() => !!props.patientId);
 
 const messageClass = computed(() => {
-  return message.value.includes('Error') || message.value.includes('error') 
-    ? 'error-text' 
-    : 'success-text';
+  return isError.value ? 'error-text' : 'success-text';
 });
 
 onMounted(async () => {
@@ -193,11 +192,13 @@ function resetForm() {
     form.insuranceId = '';
   }
   message.value = '';
+  isError.value = false;
 }
 
 async function handleSubmit() {
   submitting.value = true;
   message.value = '';
+  isError.value = false;
   
   try {
     const payload = {
@@ -223,6 +224,7 @@ async function handleSubmit() {
     }, 1500);
   } catch (err) {
     message.value = err?.response?.data?.message || 'Error al guardar el paciente';
+    isError.value = true;
     console.error(err);
   } finally {
     submitting.value = false;

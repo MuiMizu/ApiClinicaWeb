@@ -48,6 +48,8 @@
       title="Eliminar Seguro"
       :message="`¿Estás seguro de que deseas eliminar el seguro ${insuranceToDelete?.name}?`"
       confirmText="Eliminar"
+      :confirmDisabled="insuranceToDelete?.isAssignedToPatients"
+      disabledMessage="No se puede eliminar un seguro que está asignado a uno o más pacientes"
       @confirm="executeDelete"
       @cancel="showDeleteModal = false"
     />

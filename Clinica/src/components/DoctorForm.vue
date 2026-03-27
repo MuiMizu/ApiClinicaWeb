@@ -38,13 +38,13 @@
       <div class="form-floating">
         <select 
           id="specialty"
-          v-model="form.specialty" 
+          v-model.number="form.serviceId" 
           class="form-select"
           required
           :disabled="loading"
         >
           <option value="" disabled>Seleccione un servicio</option>
-          <option v-for="service in availableServices" :key="service.id" :value="service.name">
+          <option v-for="service in availableServices" :key="service.id" :value="service.id">
             {{ service.name }}
           </option>
         </select>
@@ -52,19 +52,6 @@
       </div>
     </div>
 
-    <div class="field">
-      <div class="form-floating">
-        <input 
-          id="licenseNumber"
-          v-model.trim="form.licenseNumber" 
-          type="text"
-          class="form-control"
-          placeholder="Número de Licencia"
-          :disabled="loading"
-        />
-        <label for="licenseNumber">Número de Licencia</label>
-      </div>
-    </div>
 
     <div class="field">
       <div class="form-floating">
@@ -132,12 +119,12 @@ const availableServices = ref([]);
 const submitting = ref(false);
 const loading = ref(false);
 const message = ref('');
+const isError = ref(false);
 
 const form = reactive({
   firstName: '',
   lastName: '',
-  specialty: '',
-  licenseNumber: '',
+  serviceId: '',
   phone: '',
   email: '',
 });
@@ -145,9 +132,7 @@ const form = reactive({
 const isEdit = computed(() => !!props.doctorId);
 
 const messageClass = computed(() => {
-  return message.value.includes('Error') || message.value.includes('error') 
-    ? 'error-text' 
-    : 'success-text';
+  return isError.value ? 'error-text' : 'success-text';
 });
 
 onMounted(async () => {
@@ -172,8 +157,10 @@ async function loadDoctor() {
     const doctor = await fetchDoctorById(props.doctorId);
     form.firstName = doctor.firstName;
     form.lastName = doctor.lastName;
-    form.specialty = doctor.specialty || '';
-    form.licenseNumber = doctor.licenseNumber || '';
+    // Pre-select the first associated service if any
+    form.serviceId = (doctor.serviceIds && doctor.serviceIds.length > 0)
+      ? doctor.serviceIds[0]
+      : '';
     form.phone = doctor.phone || '';
     form.email = doctor.email || '';
   } catch (err) {
@@ -190,8 +177,7 @@ function resetForm() {
   } else {
     form.firstName = '';
     form.lastName = '';
-    form.specialty = '';
-    form.licenseNumber = '';
+    form.serviceId = '';
     form.phone = '';
     form.email = '';
   }
@@ -201,13 +187,15 @@ function resetForm() {
 async function handleSubmit() {
   submitting.value = true;
   message.value = '';
+  isError.value = false;
   
   try {
+    const selectedService = availableServices.value.find(s => s.id === form.serviceId);
     const payload = {
       firstName: form.firstName,
       lastName: form.lastName,
-      specialty: form.specialty,
-      licenseNumber: form.licenseNumber || null,
+      specialty: selectedService?.name || null,
+      serviceIds: form.serviceId ? [form.serviceId] : [],
       phone: form.phone || null,
       email: form.email || null,
     };
@@ -226,6 +214,7 @@ async function handleSubmit() {
     }, 1500);
   } catch (err) {
     message.value = err?.response?.data?.message || 'Error al guardar el doctor';
+    isError.value = true;
     console.error(err);
   } finally {
     submitting.value = false;

@@ -9,9 +9,22 @@
         </div>
         <h2 class="modal-title">{{ title }}</h2>
         <p class="modal-message">{{ message }}</p>
+        
+        <div v-if="confirmDisabled" class="alert alert-warning mb-4">
+          <i class="fas fa-info-circle me-2"></i>
+          {{ disabledMessage }}
+        </div>
+
         <div class="modal-actions">
-          <button class="btn btn-secondary" @click="cancel">Cancelar</button>
-          <button class="btn" :class="confirmBtnClass" @click="confirm">
+          <button class="btn btn-secondary" @click="cancel">
+            {{ confirmDisabled ? 'Cerrar' : 'Cancelar' }}
+          </button>
+          <button 
+            v-if="!confirmDisabled"
+            class="btn" 
+            :class="confirmBtnClass" 
+            @click="confirm"
+          >
             {{ confirmText }}
           </button>
         </div>
@@ -29,6 +42,8 @@ const props = defineProps({
   message: { type: String, default: 'Esta acción no se puede deshacer.' },
   confirmText: { type: String, default: 'Confirmar' },
   type: { type: String, default: 'danger' }, // danger, warning, info
+  confirmDisabled: { type: Boolean, default: false },
+  disabledMessage: { type: String, default: '' },
 });
 
 const emit = defineEmits(['confirm', 'cancel']);
@@ -168,6 +183,25 @@ function cancel() {
   background: #3b82f6;
   color: white;
 }
+
+.alert {
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-warning {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.mb-4 { margin-bottom: 1.5rem; }
+.me-2 { margin-right: 0.5rem; }
 
 /* Animations */
 @keyframes slideUp {

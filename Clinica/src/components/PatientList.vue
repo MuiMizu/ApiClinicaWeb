@@ -47,7 +47,12 @@
           </tr>
         </tbody>
       </table>
-
+      <Paginator
+        v-if="totalPages > 1"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total-items="totalItems"
+        @page-change="handlePageChange"
       />
     </div>
 
@@ -56,6 +61,8 @@
       title="Eliminar Paciente"
       :message="`¿Estás seguro de que deseas eliminar al paciente ${patientToDelete?.firstName} ${patientToDelete?.lastName}?`"
       confirmText="Eliminar"
+      :confirmDisabled="patientToDelete?.hasAppointments"
+      disabledMessage="No se puede eliminar un paciente que tiene citas asignadas"
       @confirm="executeDelete"
       @cancel="showDeleteModal = false"
     />

@@ -17,7 +17,6 @@
           <tr>
             <th>Nombre Completo</th>
             <th>Especialidad</th>
-            <th>Licencia</th>
             <th>Teléfono</th>
             <th>Email</th>
             <th>Acciones</th>
@@ -27,7 +26,6 @@
           <tr v-for="doctor in doctors" :key="doctor.id">
             <td>{{ doctor.firstName }} {{ doctor.lastName }}</td>
             <td>{{ doctor.specialty || '-' }}</td>
-            <td>{{ doctor.licenseNumber || '-' }}</td>
             <td>{{ doctor.phone || '-' }}</td>
             <td>{{ doctor.email || '-' }}</td>
             <td class="actions-cell">
@@ -62,6 +60,8 @@
       title="Eliminar Doctor"
       :message="`¿Estás seguro de que deseas eliminar al Dr. ${doctorToDelete?.firstName} ${doctorToDelete?.lastName}?`"
       confirmText="Eliminar"
+      :confirmDisabled="doctorToDelete?.hasAppointments"
+      disabledMessage="No se puede eliminar un doctor que tiene citas asignadas"
       @confirm="executeDelete"
       @cancel="showDeleteModal = false"
     />

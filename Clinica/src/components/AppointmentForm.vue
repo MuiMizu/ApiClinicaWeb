@@ -46,7 +46,29 @@
       </select>
       <p v-if="loadingServices" class="note">Cargando servicios...</p>
     </div>
-    <div class="field">
+
+    <!-- Médico: aparece al seleccionar servicio, filtrado por serviceId -->
+    <div class="field" v-if="form.serviceId">
+      <label>Médico *</label>
+      <select
+        v-model.number="form.doctorId"
+        @change="onDoctorChange"
+        :disabled="loadingDoctors || !form.serviceId"
+        required
+      >
+        <option disabled value="">Selecciona un médico</option>
+        <option v-for="d in availableDoctors" :key="d.id" :value="d.id">
+          {{ d.firstName }} {{ d.lastName }}{{ d.specialty ? ` - ${d.specialty}` : '' }}
+        </option>
+      </select>
+      <p v-if="loadingDoctors" class="note">Cargando médicos...</p>
+      <p v-else-if="availableDoctors.length === 0 && form.serviceId" class="note error-text">
+        No hay médicos asignados a este servicio
+      </p>
+    </div>
+
+    <!-- Fecha: aparece al seleccionar médico -->
+    <div class="field" v-if="form.doctorId">
       <div class="form-floating">
         <input
           id="appointmentDate"
@@ -61,25 +83,7 @@
       </div>
     </div>
 
-    <div class="field" v-if="form.serviceId && form.date">
-      <label>Médico *</label>
-      <select
-        v-model.number="form.doctorId"
-        @change="onDoctorChange"
-        :disabled="loadingDoctors || !form.serviceId || !form.date"
-        required
-      >
-        <option disabled value="">Selecciona un médico</option>
-        <option v-for="d in availableDoctors" :key="d.id" :value="d.id">
-          {{ d.firstName }} {{ d.lastName }}{{ d.specialty ? ` - ${d.specialty}` : '' }}
-        </option>
-      </select>
-      <p v-if="loadingDoctors" class="note">Cargando médicos disponibles...</p>
-      <p v-if="!loadingDoctors && availableDoctors.length === 0 && form.serviceId && form.date" class="note error-text">
-        No hay médicos disponibles para este servicio y fecha
-      </p>
-    </div>
-
+    <!-- Hora: aparece al seleccionar médico + fecha -->
     <div class="field" v-if="form.doctorId && form.date">
       <label>Hora *</label>
       <select
@@ -133,18 +137,18 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, watch, onMounted } from 'vue';
+import { reactive, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { createAppointment, fetchAvailableTimes } from '../api/appointments';
 import { fetchServices } from '../api/services';
-import { fetchAvailableDoctors } from '../api/doctors';
+import { fetchDoctors } from '../api/doctors';
 import { fetchPatients } from '../api/patients';
 import Availability from './Availability.vue';
 
 const router = useRouter();
 
 const services = ref([]);
-const availableDoctors = ref([]);
+const allDoctors = ref([]);          // todos los doctores cargados una vez
 const availableTimes = ref([]);
 const allPatients = ref([]);
 const filteredPatients = ref([]);
@@ -158,6 +162,14 @@ const loadingPatients = ref(false);
 const submitting = ref(false);
 const message = ref('');
 const submitted = ref(false);
+
+// Filtra reactivamente por servicio seleccionado
+const availableDoctors = computed(() => {
+  if (!form.serviceId) return [];
+  return allDoctors.value.filter(d =>
+    Array.isArray(d.serviceIds) && d.serviceIds.includes(form.serviceId)
+  );
+});
 
 const form = reactive({
   serviceId: '',
@@ -182,19 +194,38 @@ const messageClass = computed(() => {
 });
 
 onMounted(async () => {
-  await loadServices();
-  await loadAllPatients();
+  await Promise.all([
+    loadServices(),
+    loadAllDoctors(),
+    loadAllPatients(),
+  ]);
 });
 
 async function loadServices() {
   loadingServices.value = true;
   try {
-    services.value = await fetchServices();
+    const result = await fetchServices();
+    // El endpoint devuelve un array directo o un objeto paginado
+    services.value = Array.isArray(result) ? result : (result.items ?? []);
   } catch (err) {
     message.value = 'Error al cargar servicios';
     console.error(err);
   } finally {
     loadingServices.value = false;
+  }
+}
+
+async function loadAllDoctors() {
+  loadingDoctors.value = true;
+  try {
+    // Traemos todos los doctores de una vez (pageSize grande)
+    const result = await fetchDoctors(1, 1000);
+    // El endpoint puede devolver paginado { items } o array directo
+    allDoctors.value = Array.isArray(result) ? result : (result.items ?? []);
+  } catch (err) {
+    console.error('Error al cargar médicos', err);
+  } finally {
+    loadingDoctors.value = false;
   }
 }
 
@@ -230,34 +261,20 @@ function selectPatient(patient) {
   filteredPatients.value = [];
 }
 
-async function onServiceChange() {
-  form.doctorId = '';
-  availableDoctors.value = [];
-  if (form.serviceId && form.date) {
-    await loadDoctors();
-  }
-}
-
-async function onDateChange() {
+function onServiceChange() {
+  // Al cambiar servicio, resetear doctor y hora
   form.doctorId = '';
   form.time = '';
-  availableDoctors.value = [];
   availableTimes.value = [];
-  if (form.serviceId && form.date) {
-    await loadDoctors();
-  }
 }
 
-async function loadDoctors() {
-  if (!form.serviceId || !form.date) return;
-  loadingDoctors.value = true;
-  try {
-    availableDoctors.value = await fetchAvailableDoctors(form.serviceId, form.date);
-  } catch (err) {
-    message.value = 'Error al cargar médicos';
-    console.error(err);
-  } finally {
-    loadingDoctors.value = false;
+function onDateChange() {
+  // Al cambiar fecha, solo resetear la hora (mantener doctor seleccionado)
+  form.time = '';
+  availableTimes.value = [];
+  // Si ya hay doctor, recargar horarios para la nueva fecha
+  if (form.doctorId && form.date) {
+    loadTimes();
   }
 }
 
@@ -282,17 +299,6 @@ async function loadTimes() {
   }
 }
 
-watch(() => form.doctorId, () => {
-  if (form.doctorId && form.date) {
-    loadTimes();
-  }
-});
-
-watch(() => form.date, () => {
-  if (form.doctorId && form.date) {
-    loadTimes();
-  }
-});
 
 function resetForm() {
   form.serviceId = '';
@@ -301,7 +307,6 @@ function resetForm() {
   form.time = '';
   selectedPatient.value = null;
   patientSearch.value = '';
-  availableDoctors.value = [];
   availableTimes.value = [];
   message.value = '';
   submitted.value = false;

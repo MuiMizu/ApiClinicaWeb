@@ -21,6 +21,7 @@
         <textarea 
           id="description"
           v-model.trim="form.description" 
+          @input="form.description = form.description.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,\-_()]/g, '')"
           class="form-control"
           placeholder="Descripción"
           style="height: 100px"
@@ -64,6 +65,7 @@ const emit = defineEmits(['saved']);
 const submitting = ref(false);
 const loading = ref(false);
 const message = ref('');
+const isError = ref(false);
 
 const form = reactive({
   name: '',
@@ -73,9 +75,7 @@ const form = reactive({
 const isEdit = computed(() => !!props.serviceId);
 
 const messageClass = computed(() => {
-  return message.value.includes('Error') || message.value.includes('error') 
-    ? 'error-text' 
-    : 'success-text';
+  return isError.value ? 'error-text' : 'success-text';
 });
 
 onMounted(async () => {
@@ -111,6 +111,7 @@ function resetForm() {
 async function handleSubmit() {
   submitting.value = true;
   message.value = '';
+  isError.value = false;
   
   try {
     const payload = {
@@ -132,6 +133,7 @@ async function handleSubmit() {
     }, 1500);
   } catch (err) {
     message.value = err?.response?.data?.message || 'Error al guardar el servicio';
+    isError.value = true;
     console.error(err);
   } finally {
     submitting.value = false;

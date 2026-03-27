@@ -48,6 +48,8 @@
       title="Eliminar Servicio"
       :message="`¿Estás seguro de que deseas eliminar el servicio ${serviceToDelete?.name}?`"
       confirmText="Eliminar"
+      :confirmDisabled="serviceToDelete?.isAssignedToDoctors"
+      disabledMessage="No se puede eliminar un servicio que está asignado a uno o más doctores"
       @confirm="executeDelete"
       @cancel="showDeleteModal = false"
     />
